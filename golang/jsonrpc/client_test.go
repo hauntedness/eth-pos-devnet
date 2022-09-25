@@ -105,10 +105,9 @@ func TestChainId(t *testing.T) {
 	}
 }
 
-var (
-	__keystore_path = filepath.Join("..", "..", "execution", "keystore")
-	__password      = "test123456"
-)
+var __keystore_path = filepath.Join("..", "..", "execution", "keystore")
+
+const __password = "test123456"
 
 func TestImportKeyStore(t *testing.T) {
 	ks := keystore.NewKeyStore(__keystore_path, keystore.StandardScryptN, keystore.StandardScryptP)
@@ -144,7 +143,7 @@ func TestBlockHeader(t *testing.T) {
 	t.Logf("header block: %v", header.Number.String())
 }
 
-func TestBlockByNumer(t *testing.T) {
+func TestBlockByNumber(t *testing.T) {
 	header, err := eth_client.HeaderByNumber(context.TODO(), big.NewInt(0))
 	if err != nil {
 		t.Error(err)

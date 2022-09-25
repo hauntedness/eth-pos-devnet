@@ -152,6 +152,7 @@ func EthSendDynamicFeeTx(ks *keystore.KeyStore, auth string, from accounts.Accou
 	if err != nil {
 		return errors.Wrap(err, "can not unlock account:"+from.Address.Hex())
 	}
+	defer ks.Lock(from.Address)
 	balance, err := eth_client.BalanceAt(context.TODO(), from.Address, nil)
 	if err != nil {
 		return errors.WithStack(err)
