@@ -25,6 +25,8 @@ const (
 	Ether = params.Ether
 )
 
+const GasLimit = uint64(21000)
+
 var (
 	eth_client *ethclient.Client
 	rpc_client *rpc.Client
@@ -123,7 +125,7 @@ func EthSendTransaction(ks *keystore.KeyStore, auth string, from accounts.Accoun
 		}
 	}
 	if opt.gasLimit == 0 {
-		opt.gasLimit = 21000
+		opt.gasLimit = GasLimit
 	}
 	if len(opt.data) == 0 {
 		opt.data = make([]byte, 0)
@@ -164,14 +166,18 @@ func EthSendDynamicFeeTx(ks *keystore.KeyStore, auth string, from accounts.Accou
 		return errors.WithStack(err)
 	}
 	var data = types.DynamicFeeTx{
-		ChainID:   chainId,
-		Nonce:     0,
-		GasTipCap: nil,
-		GasFeeCap: nil,
-		Gas:       0,
-		To:        (*common.Address)(to.Address.Bytes()),
-		Value:     amount,
-		Data:      []byte{},
+		ChainID:    chainId,
+		Nonce:      0,
+		GasTipCap:  nil,
+		GasFeeCap:  nil,
+		Gas:        GasLimit,
+		To:         (*common.Address)(to.Address.Bytes()),
+		Value:      amount,
+		Data:       []byte{},
+		AccessList: []types.AccessTuple{},
+		V:          &big.Int{},
+		R:          &big.Int{},
+		S:          &big.Int{},
 	}
 	for i := range fn {
 		fn[i](&data)
@@ -183,15 +189,14 @@ func EthSendDynamicFeeTx(ks *keystore.KeyStore, auth string, from accounts.Accou
 			return errors.WithStack(err)
 		}
 	}
-	if data.Gas == 0 {
-		v, err := eth_client.SuggestGasPrice(context.TODO())
+	if data.GasFeeCap == nil {
+		data.GasFeeCap, err = eth_client.SuggestGasPrice(context.TODO())
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		data.Gas = uint64(v.Int64())
 	}
-	if data.GasFeeCap == nil {
-		data.GasFeeCap, err = eth_client.SuggestGasTipCap(context.TODO())
+	if data.GasTipCap == nil {
+		data.GasTipCap, err = eth_client.SuggestGasTipCap(context.TODO())
 		if err != nil {
 			return errors.WithStack(err)
 		}

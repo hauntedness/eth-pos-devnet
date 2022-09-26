@@ -22,7 +22,7 @@ services:
       - --authrpc.jwtsecret=/execution/jwtsecret
       - --datadir=/execution
       - --allow-insecure-unlock
-      - --unlock=0x123463a4b065722e99115d6c222f267d9cabb524
+      - --unlock=0x54cb3e35fcf46cd9ce2e51180292545d31547930
       - --password=/execution/geth_password.txt
       - --nodiscover
       - --syncmode=full
@@ -73,7 +73,7 @@ services:
       - --execution-endpoint=http://geth:8551
       - --accept-terms-of-use
       - --jwt-secret=/execution/jwtsecret
-      - --suggested-fee-recipient=0x123463a4b065722e99115d6c222f267d9cabb524
+      - --suggested-fee-recipient=0x54cb3e35fcf46cd9ce2e51180292545d31547930
     depends_on:
       geth:
         condition: service_started

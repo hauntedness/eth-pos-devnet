@@ -2,6 +2,7 @@ package jsonrpc
 
 import (
 	"context"
+	"encoding/json"
 	"math/big"
 	"os"
 	"path/filepath"
@@ -126,13 +127,21 @@ func TestKeyStoreNewAccount(t *testing.T) {
 	t.Logf("generated accounts with address hex: %v", acc.Address.Hex())
 }
 
-func TestKeyStorePrivateKey(t *testing.T) {
+func TestKeyStoreListAddresses(t *testing.T) {
 	ks := keystore.NewKeyStore(__keystore_path, keystore.StandardScryptN, keystore.StandardScryptP)
-	acc, err := ks.NewAccount(__password)
+	type Acc struct {
+		Balance string `json:"balance"`
+	}
+	accounts := ks.Accounts()
+	var account_map = make(map[string]Acc, len(accounts))
+	for _, acc := range ks.Accounts() {
+		account_map[acc.Address.Hex()] = Acc{Balance: big.NewInt(0).Mul(big.NewInt(1000), big.NewInt(Ether)).String()}
+	}
+	b, err := json.MarshalIndent(account_map, "", "\t")
 	if err != nil {
 		t.Error(err)
 	}
-	t.Logf("generated accounts with address hex: %v", acc.Address.Hex())
+	t.Logf("%v", string(b))
 }
 
 func TestBlockHeader(t *testing.T) {
@@ -155,7 +164,7 @@ func TestSendTransaction(t *testing.T) {
 	ks := keystore.NewKeyStore(__keystore_path, keystore.StandardScryptN, keystore.StandardScryptP)
 	var from_account accounts.Account = ks.Accounts()[1]
 	to_account := ks.Accounts()[2]
-	var amount *big.Int = big.NewInt(21000)
+	var amount *big.Int = big.NewInt(Ether)
 	err := EthSendTransaction(ks, __password, from_account, to_account, amount)
 	if err != nil {
 		t.Error(err)
@@ -164,9 +173,9 @@ func TestSendTransaction(t *testing.T) {
 
 func TestEthSendDynamicFeeTx(t *testing.T) {
 	ks := keystore.NewKeyStore(__keystore_path, keystore.StandardScryptN, keystore.StandardScryptP)
-	var from_account accounts.Account = ks.Accounts()[0]
+	var from_account accounts.Account = ks.Accounts()[1]
 	to_account := ks.Accounts()[2]
-	var amount *big.Int = big.NewInt(21000)
+	var amount *big.Int = big.NewInt(Ether).Mul(big.NewInt(10), big.NewInt(Ether))
 	err := EthSendDynamicFeeTx(ks, __password, from_account, to_account, amount)
 	if err != nil {
 		t.Error(err)
